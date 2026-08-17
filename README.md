@@ -113,24 +113,22 @@ https://survey.eatsneakies.com/?src=instagram-dm
 There is no build step. The whole page is 185 KB over the wire, most of
 it the two webfonts.
 
-### Vercel, with Node installed
+### Current setup — GitHub ▸ Vercel
+
+This repo is <https://github.com/shivam-tech-sneakies/Sample-Box-Survey->
+and is linked to the Vercel project **sneakies-sample-box-survey** (team
+`shivam-8181's projects`). Pushing to `main` deploys to production; no
+CLI and no local Node needed.
 
 ```bash
-npx vercel --prod
+git push origin main
 ```
 
-From the project root. `vercel.json` is already configured — static
-output, long cache on fonts and images, no cache on `index.html` and
-`config.js` so an endpoint change goes live immediately.
+`vercel.json` handles the rest — static output, a long cache on fonts and
+images, and no cache on `index.html` or `config.js` so an endpoint change
+goes live immediately.
 
-### Vercel, without Node
-
-Use `sneakies-survey.zip` (see below) and Vercel's dashboard:
-**Add New ▸ Project ▸ Deploy a template or drop a folder** — drag the
-unzipped folder in. Framework preset: **Other**. No build command, output
-directory `.`.
-
-### Netlify / Cloudflare Pages
+### Alternatives, if you ever move off Vercel
 
 Netlify: drag the folder onto <https://app.netlify.com/drop>.
 Cloudflare Pages: **Create ▸ Upload assets**. Neither needs a build
