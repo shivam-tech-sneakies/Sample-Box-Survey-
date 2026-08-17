@@ -1,0 +1,45 @@
+/* ============================================================
+   Sneakies — Webfonts
+   Gimlet Sans (DJR) — variable, optical-size aware BODY text & numerals
+   Azo Sans Uber (R-Typography) — big highlight DISPLAY titles
+   Stenciletta Solid Bold (Delve) — subtitles / flavor names / labels
+
+   NOTE: filenames differ from the design-system copy because this
+   deployment ships the web builds already licensed for
+   eatsneakies.com (see assets/fonts/).
+
+   woff2 only — it has been universally supported since 2016, and the
+   woff fallbacks doubled the font payload for no living browser.
+   ============================================================ */
+
+/* Gimlet Sans — variable (opsz 7–72, wght 300–900)
+   Use font-variation-settings 'opsz' matched to the point size. */
+@font-face {
+  font-family: "Gimlet Sans";
+  src: url("../assets/fonts/GimletSansVariable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-stretch: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Azo Sans Uber — heaviest Azo Sans weight; the BIG highlight display face.
+   Declared for design-system parity: this page sets all display type in
+   Stenciletta, so no browser ever requests this file. It is here so that
+   --font-display / .sneak-display keep working if the page grows. */
+@font-face {
+  font-family: "Azo Sans Uber";
+  src: url("../assets/fonts/AzoSuperUber.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Stenciletta Solid Bold — secondary titles, flavor names, labels, short info */
+@font-face {
+  font-family: "Stenciletta";
+  src: url("../assets/fonts/StencilettaSolidBold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

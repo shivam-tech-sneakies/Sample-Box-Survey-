@@ -1,0 +1,83 @@
+/* ============================================================
+   Sneakies — base element defaults & helper classes.
+   Kept small: sets the cream canvas, Gimlet body, ink text.
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-variation-settings: var(--opsz-body);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Hero display (Azo Sans Uber, uppercase) ---- */
+.sneak-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: var(--fs-display);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+/* Signature packaging treatment: cream fill + hard ink drop-shadow.
+   Use on a flavor/color background. */
+.sneak-display--pop {
+  color: var(--sneak-cream);
+  text-shadow: 5px 5px 0 var(--sneak-espresso);
+}
+.sneak-h1 { font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+  font-size: var(--fs-h1); line-height: 0.96; letter-spacing: 0.005em; text-wrap: balance; }
+
+/* ---- Titles (Stenciletta Solid Bold, uppercase) ---- */
+.sneak-h2 { font-family: var(--font-title); font-weight: 700; text-transform: uppercase;
+  font-size: var(--fs-h2); line-height: 1.02; letter-spacing: 0.01em; text-wrap: balance; }
+.sneak-h3 { font-family: var(--font-title); font-weight: 700; text-transform: uppercase;
+  font-size: var(--fs-h3); line-height: 1.05; letter-spacing: 0.01em; }
+.sneak-lead { font-family: var(--font-body); font-size: var(--fs-lead); font-variation-settings: var(--opsz-lead);
+  line-height: var(--lh-normal); }
+
+/* ---- Eyebrow / label / badge (Stenciletta, tracked caps) ---- */
+.sneak-label {
+  font-family: var(--font-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-label);
+  font-size: var(--fs-small);
+  line-height: 1;
+}
+
+/* ---- Emphasized highlight word (Azo Sans Uber) ---- */
+.sneak-emph { font-family: var(--font-emph); text-transform: uppercase; }
+.sneak-emph--shadow { text-shadow: 3px 3px 0 var(--sneak-espresso); }
+
+/* ---- Stenciletta title alias ---- */
+.sneak-stencil {
+  font-family: var(--font-title);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Cream-on-ink section ---- */
+.sneak-invert { background: var(--surface-invert); color: var(--text-invert); }
+
+/* Backgrounds are always SOLID (brandbook Colors ch. — logo & text
+   sit over solid fields). No dot/halftone texture, no gradients. */
+
+/* ---- Highlighter mark (banana swipe behind a word) ---- */
+.sneak-hl {
+  background: var(--flavor-banana);
+  padding: 0 8px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+a { color: inherit; }
+img { max-width: 100%; display: block; }

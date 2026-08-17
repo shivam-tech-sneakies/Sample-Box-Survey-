@@ -1,0 +1,58 @@
+/* ============================================================
+   Sneakies — Typography tokens
+   Brandbook hierarchy (Typography chapter), authoritative:
+   • Display  — Azo Sans Uber Regular — big highlight titles / hero
+                (signature: cream fill + hard ink drop-shadow)
+   • Title    — Stenciletta Solid Bold — secondary titles, flavor
+                names, eyebrows, badges & short highlight information
+   • Body     — Gimlet Sans (variable, opsz-aware) — body text & numerals
+   Logo wordmark is a supplied image, never set in live type.
+   ============================================================ */
+:root {
+  /* Families */
+  --font-body:    "Gimlet Sans", "Georgia", serif;                 /* body text & numbers */
+  --font-display: "Azo Sans Uber", "Arial Black", sans-serif;      /* big highlight titles */
+  --font-title:   "Stenciletta", "Azo Sans Uber", sans-serif;      /* subtitles / short info */
+  --font-label:   "Stenciletta", "Azo Sans Uber", sans-serif;      /* eyebrows / badges / labels */
+
+  /* Legacy aliases (kept so component code stays stable) */
+  --font-emph:    var(--font-display);   /* big emphasized words = Azo Sans Uber */
+  --font-stencil: var(--font-title);
+
+  /* Optical-size settings — pair with matching font-size.
+     Gimlet's opsz axis (7–72) is what makes it feel right at size. */
+  --opsz-micro:   "opsz" 8;
+  --opsz-body:    "opsz" 12;
+  --opsz-lead:    "opsz" 18;
+  --opsz-title:   "opsz" 32;
+  --opsz-display: "opsz" 60;
+
+  /* Weights */
+  --w-light: 300;
+  --w-reg:   400;
+  --w-med:   500;
+  --w-semi:  600;
+  --w-bold:  700;
+  --w-black: 900;
+
+  /* Type scale (rem, 1rem = 16px) */
+  --fs-micro:   0.75rem;   /* 12px — legal, captions */
+  --fs-small:   0.875rem;  /* 14px */
+  --fs-body:    1rem;      /* 16px */
+  --fs-lead:    1.25rem;   /* 20px */
+  --fs-h4:      1.5rem;    /* 24px */
+  --fs-h3:      2rem;      /* 32px */
+  --fs-h2:      2.75rem;   /* 44px */
+  --fs-h1:      4rem;      /* 64px */
+  --fs-display: 6rem;      /* 96px */
+
+  /* Line heights */
+  --lh-tight:  1.02;
+  --lh-snug:   1.15;
+  --lh-normal: 1.45;
+
+  /* Letter-spacing */
+  --ls-label:  0.14em;   /* tracked caps labels */
+  --ls-tight: -0.01em;
+  --ls-display: -0.02em;
+}

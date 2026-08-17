@@ -1,0 +1,7 @@
+# Local preview server — never needed on the host.
+serve.py
+
+# The Google Apps Script collector lives in Google, not on the CDN.
+apps-script/
+
+README.md

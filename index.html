@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample Box Survey · Sneakies</title>
+<meta name="description" content="Tell us what you thought of your Sneakies Sample Box — 7 quick questions, about a minute.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFCEA">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sneakies Sample Box Survey">
+<meta property="og:description" content="How'd we do? 7 quick questions, about a minute.">
+<meta property="og:image" content="assets/img/sneakies-logo.png">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+
+<link rel="preload" href="assets/fonts/GimletSansVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/StencilettaSolidBold.woff2" as="font" type="font/woff2" crossorigin>
+
+<link rel="stylesheet" href="tokens/fonts.css">
+<link rel="stylesheet" href="tokens/colors.css">
+<link rel="stylesheet" href="tokens/typography.css">
+<link rel="stylesheet" href="tokens/spacing.css">
+<link rel="stylesheet" href="tokens/effects.css">
+<link rel="stylesheet" href="tokens/base.css">
+<link rel="stylesheet" href="styles/survey.css">
+</head>
+<body>
+
+<main class="page">
+  <div class="shell">
+
+    <!-- ── Masthead ─────────────────────────────────────────── -->
+    <header class="masthead">
+      <img class="masthead__logo" src="assets/img/sneakies-logo.png" alt="Sneakies" width="600" height="292">
+      <div id="masthead-copy">
+        <div class="eyebrow eyebrow--soft">Sample Box Survey</div>
+        <h1 class="masthead__title">How'd we do?</h1>
+        <p class="masthead__sub">7 quick questions, about a minute.</p>
+      </div>
+    </header>
+
+    <!-- ── Survey ───────────────────────────────────────────── -->
+    <form id="survey" novalidate>
+      <div class="shell" id="questions">
+        <!-- Question cards are rendered by survey.js from the
+             QUESTIONS definition, so the wording lives in one place. -->
+      </div>
+
+      <div class="notice" id="submit-notice" role="alert" aria-live="assertive"></div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn--primary" id="submit-btn">Submit</button>
+        <button type="button" class="btn btn--ghost" id="clear-btn">Clear</button>
+      </div>
+    </form>
+
+    <!-- ── Thank you ────────────────────────────────────────── -->
+    <section class="card thanks" id="thanks" hidden aria-live="polite">
+      <div class="eyebrow eyebrow--berry">Survey complete</div>
+      <h2 class="thanks__title">Thanks for the intel</h2>
+      <p class="thanks__body">Your answers go straight to the flavor lab and help us fine-tune the lineup before launch.</p>
+      <button type="button" class="btn btn--ghost btn--md" id="again-btn">Take it again</button>
+    </section>
+
+    <noscript>
+      <div class="card">
+        <p style="margin:0">This survey needs JavaScript switched on. If you'd rather just reply by
+        email, send your notes to <a href="mailto:hello@eatsneakies.com">hello@eatsneakies.com</a>
+        and we'll log them for you.</p>
+      </div>
+    </noscript>
+
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="survey.js"></script>
+</body>
+</html>

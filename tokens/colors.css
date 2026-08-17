@@ -1,0 +1,89 @@
+/* ============================================================
+   Sneakies — Color tokens
+   AUTHORITATIVE: sampled directly from the brandbook packaging
+   plates (Colors chapter). Light cream canvas, espresso ink, and
+   a per-flavor light-tint / saturated-hero pair. Each flavor also
+   has a COMPLEMENT color used for its nutrition dots.
+   ============================================================ */
+:root {
+  /* --- Core neutrals --- */
+  --sneak-cream:   #FFFCEA;   /* primary background — light warm cream    */
+  --sneak-cream-2: #F6EFD3;   /* deeper cream — alternating section band   */
+  --sneak-paper:   #FFFDF4;   /* lightest paper — cards / ticket surfaces  */
+  --sneak-ink:     #201512;   /* espresso brown-black — text & outlines    */
+  --sneak-ink-soft:#5A4C3E;   /* muted body / secondary text               */
+  --sneak-espresso:#1A0E0B;   /* deepest brown — display shadow, footer    */
+
+  /* Ink washes (hairlines / overlays) */
+  --sneak-ink-70: rgba(32, 21, 18, 0.72);
+  --sneak-ink-55: rgba(32, 21, 18, 0.55);
+  --sneak-ink-15: rgba(32, 21, 18, 0.15);
+  --sneak-ink-08: rgba(32, 21, 18, 0.08);
+
+  /* --- Flavor: Banana Bonanza (yellow) · with carrots --- */
+  --flavor-banana:       #F7DC33;   /* saturated hero      */
+  --flavor-banana-tint:  #F9E987;   /* light background    */
+  --flavor-banana-deep:  #C99A0A;   /* legible text on tint*/
+  --flavor-banana-dot:   #DB2F49;   /* nutrition-dot color (red) */
+
+  /* --- Flavor: Apple Pie Agents (green) · with spinach --- */
+  --flavor-apple:        #7EB83F;
+  --flavor-apple-tint:   #BAD378;
+  --flavor-apple-deep:   #3D8B2E;
+  --flavor-apple-dot:    #FAE733;   /* (yellow) */
+
+  /* --- Flavor: Berry Bandits (magenta-pink) · with beets --- */
+  --flavor-berry:        #C9337A;
+  --flavor-berry-tint:   #EFB0C5;
+  --flavor-berry-deep:   #A11F5C;
+  --flavor-berry-dot:    #5D77B2;   /* (blue) */
+
+  /* --- Flavor: Buttermilk Blast (slate blue) · with cauliflower --- */
+  --flavor-buttermilk:      #5F7AAF;
+  --flavor-buttermilk-tint: #B4C8E3;
+  --flavor-buttermilk-deep: #3A548A;
+  --flavor-buttermilk-dot:  #83B53C;   /* (green) */
+
+  /* Soft flavor wash for full-section tinting */
+  --flavor-berry-wash: #FAE6F0;
+
+  /* Utility accent (eyebrows / small marks) */
+  --accent-carrot:  #E48A2B;
+
+  /* Illustration hues sampled from the cast. PER BRANDBOOK these
+     colors are RESERVED for character illustrations & pancakes only —
+     never backgrounds, typography, text, or UI chrome. Reference only. */
+  --accent-beet:    #C0398C;
+  --accent-leaf:    #5FA83C;
+  --accent-boot:    #2E4A2A;
+
+  /* --- Semantic aliases (theme surface = cream) --- */
+  --bg:              var(--sneak-cream);
+  --surface:         var(--sneak-cream);
+  --surface-card:    var(--sneak-paper);
+  --surface-invert:  var(--sneak-ink);
+
+  --text:            var(--sneak-ink);
+  --text-muted:      var(--sneak-ink-soft);
+  --text-invert:     var(--sneak-cream);
+
+  --border:          var(--sneak-ink);      /* signature: full-ink outlines */
+  --border-soft:     var(--sneak-ink-15);
+
+  --brand:           var(--sneak-ink);      /* primary action = ink on cream */
+  --brand-contrast:  var(--sneak-cream);
+
+  /* Arbitrary fallback only — NOT a house color. Flavor accents are used
+     EQUALLY; set a .flavor-* class per section and rotate. No accent bias. */
+  --accent:          var(--flavor-banana);
+  --accent-tint:     var(--flavor-banana-tint);
+  --accent-deep:     var(--flavor-banana-deep);
+  --accent-dot:      var(--flavor-banana-dot);
+}
+
+/* -------- Per-flavor theming --------
+   Add class to any container to retint --accent locally. */
+.flavor-banana     { --accent: var(--flavor-banana);     --accent-tint: var(--flavor-banana-tint);     --accent-deep: var(--flavor-banana-deep);     --accent-dot: var(--flavor-banana-dot); }
+.flavor-apple      { --accent: var(--flavor-apple);      --accent-tint: var(--flavor-apple-tint);      --accent-deep: var(--flavor-apple-deep);      --accent-dot: var(--flavor-apple-dot); }
+.flavor-berry      { --accent: var(--flavor-berry);      --accent-tint: var(--flavor-berry-tint);      --accent-deep: var(--flavor-berry-deep);      --accent-dot: var(--flavor-berry-dot); }
+.flavor-buttermilk { --accent: var(--flavor-buttermilk); --accent-tint: var(--flavor-buttermilk-tint); --accent-deep: var(--flavor-buttermilk-deep); --accent-dot: var(--flavor-buttermilk-dot); }

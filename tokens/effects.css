@@ -1,0 +1,26 @@
+/* ============================================================
+   Sneakies — Effects: shadows, motion, borders
+   The brand's depth cue is a HARD offset ink shadow (sticker /
+   comic look), never a soft blur. Motion is bouncy and playful.
+   ============================================================ */
+:root {
+  /* Hard offset "sticker" shadows — solid ink, no blur.
+     This is the signature elevation of the brand. */
+  --shadow-hard-sm: 3px 3px 0 var(--sneak-ink);
+  --shadow-hard:    5px 5px 0 var(--sneak-ink);
+  --shadow-hard-lg: 8px 8px 0 var(--sneak-ink);
+
+  /* Rare soft shadow — only for floating product photography,
+     never on UI chrome. */
+  --shadow-soft: 0 12px 32px rgba(27, 3, 5, 0.16);
+
+  /* Motion — snappy with a little overshoot (playful bounce) */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:    cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast:    120ms;
+  --dur:         200ms;
+  --dur-slow:    360ms;
+
+  /* Focus ring — ink, offset, matches the hand-drawn outline world */
+  --focus-ring: 0 0 0 3px var(--sneak-cream), 0 0 0 5.5px var(--sneak-ink);
+}

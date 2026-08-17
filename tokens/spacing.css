@@ -1,0 +1,32 @@
+/* ============================================================
+   Sneakies — Spacing, radii, layout tokens
+   8-based rhythm with a 4px half-step.
+   ============================================================ */
+:root {
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+
+  /* Radii — the brand rounds generously (sachet corners, pill badges).
+     Nothing is sharp; nothing is a perfect circle except dots. */
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   22px;
+  --radius-xl:   32px;
+  --radius-pill: 999px;
+
+  /* Container widths */
+  --container:      1200px;
+  --container-text: 680px;
+
+  /* Signature outline weight — thick, confident ink line */
+  --stroke:      2.5px;
+  --stroke-bold: 3.5px;
+}
