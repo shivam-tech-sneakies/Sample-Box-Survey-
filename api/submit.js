@@ -64,16 +64,26 @@ module.exports = async (req, res) => {
     let data = null;
     try { data = JSON.parse(text); } catch (e) { /* Apps Script served HTML */ }
 
+    // 401/403, or an HTML body, both mean the same thing: the Web App
+    // deployment is not set to "Who has access: Anyone", so Google hands
+    // anonymous callers a sign-in page instead of running doPost. This is
+    // by far the most common way this breaks, so name it exactly.
+    const notPublic = upstream.status === 401 || upstream.status === 403 || !data;
+    if (notPublic) {
+      console.error(
+        'Apps Script is not publicly reachable (HTTP %s, %s body). Fix: Apps Script ▸ ' +
+        'Deploy ▸ Manage deployments ▸ edit ▸ Who has access: Anyone.',
+        upstream.status, data ? 'JSON' : 'HTML'
+      );
+      return res.status(502).json({
+        ok: false,
+        error: 'The collector is not publicly reachable — the Apps Script deployment needs "Who has access: Anyone"'
+      });
+    }
+
     if (!upstream.ok) {
       console.error('Apps Script returned HTTP %s', upstream.status);
       return res.status(502).json({ ok: false, error: 'Sheet rejected the write (HTTP ' + upstream.status + ')' });
-    }
-
-    // An HTML body means the deployment is not public — Apps Script
-    // hands anonymous callers a sign-in page instead of running doPost.
-    if (!data) {
-      console.error('Apps Script returned non-JSON; deployment is probably not set to "Anyone".');
-      return res.status(502).json({ ok: false, error: 'Collector is not publicly reachable' });
     }
     if (data.ok === false) {
       console.error('Apps Script refused the row: %s', data.error);
