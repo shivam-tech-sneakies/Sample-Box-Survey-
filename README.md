@@ -7,7 +7,8 @@ components. Meant to live on its own subdomain (e.g.
 
 ```
 index.html          the page
-config.js           ← the only file you edit between environments
+config.js           client config (posts to /api/submit)
+api/submit.js       same-origin proxy → Google Apps Script
 survey.js           questions, options, validation, submit
 styles/survey.css   design-system components as classes
 tokens/*.css        Sneakies tokens (copied from the design system)
@@ -18,7 +19,11 @@ vercel.json         headers + caching
 serve.py            local preview only, not deployed
 ```
 
-No build step, no dependencies, no framework. Any static host works.
+No build step, no dependencies, no framework. The page itself is pure
+static files; the one moving part is `api/submit.js`, a serverless
+function that needs a host able to run one (Vercel, Netlify Functions,
+Cloudflare Workers). See "Why the page does not call Apps Script
+directly" below for why it is unavoidable.
 
 ---
 
@@ -30,10 +35,13 @@ python3 serve.py
 
 Then open <http://localhost:4321>.
 
-With `config.js` still empty the page runs in **dry-run mode**: everything
-works, the thank-you screen appears, and the payload is logged to the
-browser console instead of being sent anywhere. Good for reviewing copy
-before you wire up the sheet.
+`serve.py` serves static files only, so `/api/submit` does not exist
+locally and a real submission will fail. For local work set
+`endpoint: ''` in `config.js` — that puts the page in **dry-run mode**:
+everything works, the thank-you screen appears, and the payload is logged
+to the browser console instead of being sent anywhere. Good for reviewing
+copy and layout. Test real submissions against a Vercel preview
+deployment, where the function exists.
 
 ---
 
@@ -66,15 +74,34 @@ credentials in the page.
    "Anyone" is required — respondents are not signed in to Google. It lets
    anyone *call* the script; it does not give anyone access to the sheet.
 6. Copy the **Web app URL**. It ends in `/exec` — not `/dev`.
-7. Paste it into `config.js` as `endpoint`.
+7. Put it in [`api/submit.js`](api/submit.js) as `ENDPOINT`, or better,
+   set it as a `SURVEY_ENDPOINT` environment variable in Vercel ▸
+   Settings ▸ Environment Variables (it takes precedence, and then the
+   URL is not in the repo at all).
 
-```js
-window.SNEAKIES_SURVEY_CONFIG = {
-  endpoint: 'https://script.google.com/macros/s/AKfy…/exec',
-  secret: 'sneakies-sample-box-2026',
-  supportEmail: 'hello@eatsneakies.com',
-};
+### Why the page does not call Apps Script directly
+
+Apps Script Web Apps send **no `Access-Control-Allow-Origin` header**, so
+a browser is not permitted to read the response of a `fetch` made
+straight to the `/exec` URL — the request is blocked by CORS before the
+page ever sees it. Confirmed the hard way: posting direct works from
+`http://localhost` but fails from a real HTTPS origin with
+
 ```
+Access to fetch at 'https://script.google.com/…/exec' from origin
+'https://…vercel.app' has been blocked by CORS policy
+```
+
+So submissions go to **`/api/submit`** on our own origin
+([`api/submit.js`](api/submit.js)), which forwards to Apps Script
+server-side. No CORS is involved, real success/failure comes back as
+JSON, and the Apps Script URL and shared secret stay out of the page
+source where anyone could read them from devtools.
+
+The common workaround for this — `fetch(..., { mode: 'no-cors' })` — is
+deliberately *not* used: it makes the response unreadable, so the page
+would have to show the thank-you screen without knowing whether the row
+was written.
 
 To check the collector is alive, open that `/exec` URL in a browser. It
 returns `{"ok":true,…,"responses":N}`.

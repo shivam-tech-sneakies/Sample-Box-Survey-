@@ -492,8 +492,9 @@
   }
 
   function buildPayload() {
+    // No shared secret here on purpose — api/submit.js attaches it
+    // server-side so it never reaches the browser.
     return {
-      secret: CONFIG.secret || '',
       submissionId: uuid(),
       submittedAt: new Date().toISOString(),
       name: String(state.name || '').trim(),
@@ -507,8 +508,8 @@
     };
   }
 
-  /* Content-Type text/plain keeps this a CORS "simple request", so
-     the browser skips the preflight that Apps Script cannot answer. */
+  /* Posts to our own origin (api/submit.js), so plain JSON is fine and
+     there is no CORS in play at all. */
   function postOnce(payload) {
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, SUBMIT_TIMEOUT_MS);
@@ -516,7 +517,7 @@
     return fetch(CONFIG.endpoint, {
       method: 'POST',
       body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      headers: { 'Content-Type': 'application/json' },
       redirect: 'follow',
       signal: controller.signal
     }).then(function (response) {
@@ -524,7 +525,11 @@
       return response.text().then(function (text) {
         var data = null;
         try { data = JSON.parse(text); } catch (e) { /* non-JSON body */ }
-        if (!response.ok) throw new Error('HTTP ' + response.status);
+        // Surface the proxy's own reason where it gave one — it is far
+        // more useful in the console than a bare status code.
+        if (!response.ok) {
+          throw new Error((data && data.error) || 'HTTP ' + response.status);
+        }
         if (data && data.ok === false) throw new Error(data.error || 'Rejected by the sheet');
         return data;
       });
