@@ -106,9 +106,17 @@ was written.
 To check the collector is alive, open that `/exec` URL in a browser. It
 returns `{"ok":true,…,"responses":N}`.
 
-> **Every time you edit `Code.gs` you must redeploy** — Deploy ▸ Manage
-> deployments ▸ pencil icon ▸ Version: *New version* ▸ Deploy. The URL
-> stays the same. Editing the script alone changes nothing for live users.
+> **Every time you edit `Code.gs` you must redeploy.** Deploy ▸ Manage
+> deployments ▸ pencil icon ▸ Version: **New version** ▸ Deploy. The URL
+> stays the same. Editing and saving the script changes nothing for live
+> callers.
+>
+> **Do not use "Deploy ▸ New deployment" for an update.** It mints a
+> *different* `/exec` URL and leaves the old one frozen on the old code, so
+> the site keeps calling a stale copy while the editor shows the new one.
+> The symptom is the collector rejecting a payload shape it clearly
+> supports. If that happens, check the URL in `api/submit.js` against the
+> active deployment's URL before debugging anything else.
 
 ### Columns written
 
