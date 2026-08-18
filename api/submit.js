@@ -38,13 +38,16 @@ module.exports = async (req, res) => {
   if (!payload || typeof payload !== 'object') {
     return res.status(400).json({ ok: false, error: 'Empty body' });
   }
-  const email = String(payload.email || '').trim();
+  // Lower-cased so the address matches the customer record. Shopify and
+  // Klaviyo both store addresses folded to lower case, so "Zoe@Example.COM"
+  // typed into the form would otherwise never join up with an order.
+  const email = String(payload.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
     return res.status(400).json({ ok: false, error: 'A valid email address is required' });
   }
 
   // The secret is attached here, never in the browser.
-  const body = JSON.stringify({ ...payload, secret: SECRET });
+  const body = JSON.stringify({ ...payload, email: email, secret: SECRET });
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
