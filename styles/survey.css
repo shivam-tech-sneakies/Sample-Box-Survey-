@@ -64,6 +64,16 @@ a:hover { color: var(--flavor-berry); }
   padding-top: 8px;
 }
 
+/* The logo links home. Inline-block so the masthead's text-align
+   centres it, with a small lift on hover to signal it is clickable. */
+.masthead__logolink {
+  display: inline-block;
+  border-radius: var(--radius-sm);
+  transition: transform var(--dur) var(--ease-bounce);
+}
+
+.masthead__logolink:hover { transform: translateY(-2px); }
+
 .masthead__logo {
   width: 150px;
   height: auto;

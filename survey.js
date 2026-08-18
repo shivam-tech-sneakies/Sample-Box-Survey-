@@ -63,12 +63,12 @@
     {
       id: 'likedMost', type: 'textarea', required: false,
       prompt: 'What did you (and your kids) like the most about Sneakies?',
-      placeholder: 'Anything at all — taste, texture, how easy it was, what the kids said…'
+      placeholder: 'Anything at all: taste, texture, how easy it was, what the kids said…'
     },
     {
       id: 'improve', type: 'textarea', required: false,
       prompt: 'What (if anything) would you change about Sneakies or want us to improve?',
-      placeholder: "Be blunt — this is the most useful thing you can tell us."
+      placeholder: "Be blunt. This is the most useful thing you can tell us."
     },
     {
       id: 'flavorsNext', type: 'textarea', required: false,
@@ -291,7 +291,7 @@
     input.id = 'field-' + q.id + '-other';
     input.placeholder = 'Tell us more (optional)';
     input.value = state[q.id + 'Other'] || '';
-    input.setAttribute('aria-label', q.prompt + ' — tell us more');
+    input.setAttribute('aria-label', q.prompt + ' (tell us more)');
     input.maxLength = 500;
     input.addEventListener('input', function () {
       state[q.id + 'Other'] = input.value;
@@ -619,9 +619,9 @@
         var focusTarget = card.querySelector('.input, .chip');
         if (focusTarget) focusTarget.focus({ preventScroll: true });
       }
-      showNotice('<strong>Nearly there</strong> — ' + missing.length +
-        (missing.length === 1 ? ' question still needs' : ' questions still need') +
-        ' an answer. They\'re outlined below.');
+      showNotice('<strong>Nearly there.</strong> ' + (missing.length === 1
+        ? '1 question still needs an answer. It\'s outlined below.'
+        : missing.length + ' questions still need an answer. They\'re outlined below.'));
       return;
     }
 
@@ -629,7 +629,7 @@
 
     if (!CONFIG.endpoint) {
       // Dry run: no endpoint configured yet.
-      console.info('[Sneakies survey] DRY RUN — no endpoint set in config.js. Payload:', payload);
+      console.info('[Sneakies survey] DRY RUN. No endpoint set in config.js. Payload:', payload);
       finish();
       return;
     }
@@ -641,7 +641,7 @@
     }).catch(function (error) {
       setSubmitting(false);
       console.error('[Sneakies survey] submit failed:', error);
-      showNotice('<strong>That didn\'t go through</strong> — your answers are still here, ' +
+      showNotice('<strong>That didn\'t go through.</strong> Your answers are still here, ' +
         'so press Submit to try again. If it keeps failing, email them to ' +
         '<a href="mailto:' + (CONFIG.supportEmail || 'hello@eatsneakies.com') + '">' +
         (CONFIG.supportEmail || 'hello@eatsneakies.com') + '</a>.');

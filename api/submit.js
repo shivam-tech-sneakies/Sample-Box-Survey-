@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
       );
       return res.status(502).json({
         ok: false,
-        error: 'The collector is not publicly reachable — the Apps Script deployment needs "Who has access: Anyone"'
+        error: 'The collector is not publicly reachable. The Apps Script deployment needs "Who has access: Anyone"'
       });
     }
 
