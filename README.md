@@ -114,16 +114,20 @@ returns `{"ok":true,…,"responses":N}`.
 
 One row per submission, in this order:
 
-`Submitted at` · `Submission ID` · `Name` · `Overall verdict` ·
+`Submitted at` · `Submission ID` · `Email` · `Overall verdict` ·
 `Overall — other` · `Banana Bonanza` · `Apple Pie Agents` ·
-`Berry Bandits` · `Buttermilk Blast` · `Kids reaction` · `Liked most` ·
-`Liked most — other` · `Would change` · `Would change — other` ·
-`Purchase intent` · `Source` · `UTM source` · `UTM medium` ·
-`UTM campaign` · `Referrer` · `Language` · `Screen` · `User agent`
+`Berry Bandits` · `Buttermilk Blast` · `Liked most` ·
+`Would change / improve` · `Flavors wanted next` · `Open to CEO call` ·
+`Source` · `UTM source` · `UTM medium` · `UTM campaign` · `Referrer` ·
+`Language` · `Screen` · `User agent`
 
-The two multi-select questions (liked most / would change) put every
-chosen option in a single cell separated by ` | `, so the column stays
-sortable and filterable while keeping all answers visible.
+> **The column layout changed** when the survey was revised (email
+> instead of name; the kids-reaction and purchase-intent questions
+> replaced by open-ended ones). `getSheet()` rewrites row 1 whenever the
+> header does not match, so **clear out any rows written under the old
+> layout first** — otherwise they will sit under headings that no longer
+> describe them. Re-run `testWrite` after pasting the new `Code.gs` to
+> confirm the header lands correctly, then delete the test row.
 
 `Source` comes from a `?src=` query parameter, so you can tell channels
 apart without separate links breaking anything:
@@ -188,12 +192,34 @@ HTTPS is issued automatically. Give DNS up to an hour.
 
 ## Notes and decisions
 
-**Required questions.** Name, the overall verdict (Q2) and purchase intent
-(Q7) block submit; everything else is optional, since per-flavor ratings
-and the two multi-selects are the questions people most reasonably skip.
-To change this, flip `required` on any entry in the `QUESTIONS` array in
-`survey.js` — that array is the single source of truth for wording,
-options and validation.
+**Required questions.** Email (Q1), the overall verdict (Q2) and the
+CEO-call yes/no (Q7) block submit. The three open-ended questions and the
+per-flavor ratings are optional — requiring free text is the single
+biggest driver of survey abandonment, and a forced answer is usually a
+worthless one. If you would rather insist on them, flip `required: true`
+on those entries in the `QUESTIONS` array in `survey.js`; that array is
+the single source of truth for wording, options and validation.
+
+**Email, not name.** A typed name cannot be matched back to a customer
+record reliably, so Q1 collects the email address instead and says why
+("So we can match this to your sample box order"). It is validated on the
+client, in `api/submit.js`, and again in `Code.gs`.
+
+**The CEO-call question is required** so the answer is unambiguous — an
+empty cell would not tell you whether someone declined or simply never
+scrolled that far. It is one tap either way.
+
+**Review prompt.** The Okendo link at the foot of the form (and on the
+thank-you card, which is the higher-intent moment) points at the Sneakies
+Sample Box product, `shopify-9274301710485`, tagged
+`okeChannel=sample-box-survey` so review attribution is separable from
+other channels. It opens in a new tab so nobody loses their answers.
+
+**Open-ended fields grow as you type** using a CSS replicated-content
+mirror (`.grow-wrap` in `survey.css`) rather than measuring
+`scrollHeight` in JS. The JS approach ratcheted to its cap: once it
+measured a field sitting inside a hidden subtree it read a height of 0,
+and the box never recovered its correct size.
 
 **Thank-you card.** The design showed a row of four characters above
 "Survey complete"; that row was removed on request, so the card is now

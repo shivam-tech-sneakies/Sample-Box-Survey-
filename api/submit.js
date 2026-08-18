@@ -38,8 +38,9 @@ module.exports = async (req, res) => {
   if (!payload || typeof payload !== 'object') {
     return res.status(400).json({ ok: false, error: 'Empty body' });
   }
-  if (!String(payload.name || '').trim()) {
-    return res.status(400).json({ ok: false, error: 'Name is required' });
+  const email = String(payload.email || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return res.status(400).json({ ok: false, error: 'A valid email address is required' });
   }
 
   // The secret is attached here, never in the browser.

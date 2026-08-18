@@ -313,6 +313,48 @@ a:hover { color: var(--flavor-berry); }
 .input:focus { box-shadow: 3px 3px 0 var(--sneak-ink); }
 .input::placeholder { color: var(--sneak-ink-55); }
 
+/* Open-ended answers. Same ink-outlined skin as Input.
+
+   Auto-growing is done with the replicated-content trick rather than by
+   measuring scrollHeight in JS: a ::after mirror of the value shares one
+   grid cell with the textarea, so the wrapper is sized by the text and
+   the field simply fills it. No measurement means no feedback loop — the
+   JS version ratcheted to its cap once it ever measured a field that was
+   inside a hidden subtree (scrollHeight 0). Mirror and field must keep
+   identical typography and box metrics, hence the shared rule. */
+.grow-wrap {
+  display: grid;
+  width: 100%;
+}
+
+.grow-wrap > .textarea,
+.grow-wrap::after {
+  grid-area: 1 / 1 / 2 / 2;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: var(--lh-normal);
+  font-variation-settings: var(--opsz-body);
+  padding: 12px 14px;
+  border-width: var(--stroke);
+  border-style: solid;
+  border-radius: var(--radius-md);
+  min-height: 96px;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.grow-wrap::after {
+  content: attr(data-replicated-value) " ";
+  border-color: transparent;
+  visibility: hidden;
+}
+
+.grow-wrap > .textarea {
+  resize: none;
+  overflow: hidden;
+}
+
 /* ---------------------------------------------------------------
    8. Buttons — design-system Button (variant primary | ghost, size lg)
    --------------------------------------------------------------- */
@@ -367,6 +409,40 @@ a:hover { color: var(--flavor-berry); }
   padding-top: 8px;
   flex-wrap: wrap;
 }
+
+/* ---------------------------------------------------------------
+   8b. Review prompt
+   --------------------------------------------------------------- */
+.review-link {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: var(--lh-normal);
+  color: var(--sneak-ink-soft);
+  text-align: center;
+  margin: 26px auto 0;
+  max-width: 460px;
+  text-wrap: pretty;
+}
+
+.review-link a {
+  color: var(--sneak-ink);
+  font-weight: 600;
+  /* Banana highlighter swipe under the link — the brand's own device. */
+  text-decoration: underline;
+  text-decoration-color: var(--flavor-banana);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  transition: color var(--dur-fast) ease, text-decoration-color var(--dur-fast) ease;
+}
+
+.review-link a:hover {
+  color: var(--flavor-berry);
+  text-decoration-color: var(--flavor-berry);
+}
+
+/* On the thank-you card it sits inside the flex column, so the auto
+   margins above would fight the card's own gap. */
+.thanks .review-link { margin: 6px auto 0; }
 
 /* ---------------------------------------------------------------
    9. Validation + submit feedback
@@ -462,6 +538,9 @@ a:hover { color: var(--flavor-berry); }
   .actions .btn { width: 100%; }
   .thanks { padding: 36px 18px; }
   .thanks__title { font-size: 24px; }
+  .review-link { font-size: 14px; margin-top: 22px; }
+  .grow-wrap > .textarea,
+  .grow-wrap::after { min-height: 88px; }
 }
 
 @media (min-width: 621px) and (max-width: 760px) {

@@ -2,28 +2,32 @@
    Sneakies Sample Box Survey
 
    Questions, options and copy all live in QUESTIONS / FLAVORS
-   below — edit those to change the survey, nothing else.
+   below — edit those to change the survey, nothing else. The
+   state shape, validation and the submitted payload are all
+   derived from it, so adding or removing a question is a
+   one-place edit.
 
-   Answers POST as JSON to a Google Apps Script Web App, which
-   appends one row per response to the response spreadsheet.
-   See apps-script/Code.gs and README.md.
+   Answers POST to /api/submit on this origin, which forwards to
+   a Google Apps Script Web App that appends one row per response
+   to the response spreadsheet. See apps-script/Code.gs.
    ============================================================ */
 (function () {
   'use strict';
 
   var CONFIG = window.SNEAKIES_SURVEY_CONFIG || {};
-  var DRAFT_KEY = 'sneakies-survey-draft-v1';
+  var DRAFT_KEY = 'sneakies-survey-draft-v2';
   var SUBMIT_TIMEOUT_MS = 20000;
 
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
   /* ---------------------------------------------------------------
-     Survey definition
-     `required: true` blocks submit until answered.
+     Flavor lineup for the per-flavor rating grid
      --------------------------------------------------------------- */
   var FLAVORS = [
-    { key: 'banana',     name: 'Banana Bonanza',    veg: 'With carrots',     tint: 'var(--flavor-banana-tint)',     hero: 'var(--flavor-banana)',     img: 'assets/img/carrot.png',      w: 200, h: 167 },
-    { key: 'apple',      name: 'Apple Pie Agents',  veg: 'With spinach',     tint: 'var(--flavor-apple-tint)',      hero: 'var(--flavor-apple)',      img: 'assets/img/spinach.png',     w: 158, h: 200 },
-    { key: 'berry',      name: 'Berry Bandits',     veg: 'With beets',       tint: 'var(--flavor-berry-tint)',      hero: 'var(--flavor-berry)',      img: 'assets/img/strawberry.png',  w: 112, h: 200 },
-    { key: 'buttermilk', name: 'Buttermilk Blast',  veg: 'With cauliflower', tint: 'var(--flavor-buttermilk-tint)', hero: 'var(--flavor-buttermilk)', img: 'assets/img/cauliflower.png', w: 131, h: 200 }
+    { key: 'banana',     name: 'Banana Bonanza',   veg: 'With carrots',     tint: 'var(--flavor-banana-tint)',     hero: 'var(--flavor-banana)',     img: 'assets/img/carrot.png',      w: 108, h: 90 },
+    { key: 'apple',      name: 'Apple Pie Agents', veg: 'With spinach',     tint: 'var(--flavor-apple-tint)',      hero: 'var(--flavor-apple)',      img: 'assets/img/spinach.png',     w: 85,  h: 108 },
+    { key: 'berry',      name: 'Berry Bandits',    veg: 'With beets',       tint: 'var(--flavor-berry-tint)',      hero: 'var(--flavor-berry)',      img: 'assets/img/strawberry.png',  w: 60,  h: 108 },
+    { key: 'buttermilk', name: 'Buttermilk Blast', veg: 'With cauliflower', tint: 'var(--flavor-buttermilk-tint)', hero: 'var(--flavor-buttermilk)', img: 'assets/img/cauliflower.png', w: 71,  h: 108 }
   ];
 
   var FLAVOR_OPTIONS = ['Loved it', 'Liked it', 'It was fine', 'Not for me', "Haven't tried it yet"];
@@ -34,65 +38,70 @@
     'var(--flavor-berry)'
   ];
 
+  /* ---------------------------------------------------------------
+     The survey. Types: email | text | textarea | single | multi | flavors
+     `required: true` blocks submit until answered.
+     --------------------------------------------------------------- */
   var QUESTIONS = [
     {
-      id: 'name', type: 'text', required: true,
-      prompt: "What's your name?",
-      placeholder: 'First and last name',
-      column: 'Name'
+      id: 'email', type: 'email', required: true,
+      prompt: "What's your email address?",
+      placeholder: 'you@example.com',
+      note: 'So we can match this to your sample box order.',
+      error: 'Please add the email address you ordered with.'
     },
     {
-      id: 'q2', type: 'single', required: true,
+      id: 'verdict', type: 'single', required: true,
       prompt: 'What did you think of your Sneakies Sample Box?',
       options: ['Loved it', 'Liked it', 'It was okay', 'Not for me', 'Something else'],
-      otherOption: 'Something else',
-      column: 'Overall verdict'
+      otherOption: 'Something else'
     },
     {
-      id: 'q3', type: 'flavors', required: false,
+      id: 'flavorRatings', type: 'flavors', required: false,
       prompt: 'How would you rate each flavor?'
     },
     {
-      id: 'q4', type: 'single', required: false,
-      prompt: 'How did the kids react?',
-      options: ['They asked for more', 'They ate it happily', 'They ate it after some convincing', "They weren't into it", 'No kids tried it'],
-      column: 'Kids reaction'
+      id: 'likedMost', type: 'textarea', required: false,
+      prompt: 'What did you (and your kids) like the most about Sneakies?',
+      placeholder: 'Anything at all — taste, texture, how easy it was, what the kids said…'
     },
     {
-      id: 'q5', type: 'multi', required: false,
-      prompt: 'What did you like most about Sneakies?',
-      options: ['The taste', 'Real fruits and veggies in every bag', 'How easy it is, one bag and no measuring', 'My kids liked it', 'The ingredients list', 'The packaging and characters', 'Something else'],
-      otherOption: 'Something else',
-      column: 'Liked most'
+      id: 'improve', type: 'textarea', required: false,
+      prompt: 'What (if anything) would you change about Sneakies or want us to improve?',
+      placeholder: "Be blunt — this is the most useful thing you can tell us."
     },
     {
-      id: 'q6', type: 'multi', required: false,
-      prompt: 'If you could change one thing, what would it be?',
-      options: ['Nothing, leave it as it is', 'Make it sweeter', 'Make it less sweet', 'The texture of the pancakes', 'Clearer instructions for making them', 'The flavor lineup', 'The price', 'Something else'],
-      otherOption: 'Something else',
-      column: 'Would change'
+      id: 'flavorsNext', type: 'textarea', required: false,
+      prompt: 'What flavors do you want to see us launch next?',
+      placeholder: 'Chocolate chip, pumpkin spice, something we would never think of…'
     },
     {
-      id: 'q7', type: 'single', required: true,
-      prompt: 'How likely are you to buy Sneakies once it launches?',
-      options: ['Very likely', 'Likely', 'Not sure yet', 'Unlikely', 'Very unlikely'],
-      column: 'Purchase intent'
+      id: 'ceoCall', type: 'single', required: true,
+      prompt: 'Are you open to having a 15 min conversation with me (Arun, CEO of Sneakies) to get more of your feedback?',
+      options: ['Yes', 'No'],
+      note: "If yes, I'll email you to find a time that suits you."
     }
   ];
 
   /* ---------------------------------------------------------------
-     State
+     State, derived from QUESTIONS
      --------------------------------------------------------------- */
   function blankState() {
-    return {
-      name: '',
-      q2: null, q2Other: '',
-      q3: { banana: null, apple: null, berry: null, buttermilk: null },
-      q4: null,
-      q5: [], q5Other: '',
-      q6: [], q6Other: '',
-      q7: null
-    };
+    var state = {};
+    QUESTIONS.forEach(function (q) {
+      if (q.type === 'flavors') {
+        state[q.id] = {};
+        FLAVORS.forEach(function (f) { state[q.id][f.key] = null; });
+      } else if (q.type === 'multi') {
+        state[q.id] = [];
+      } else if (q.type === 'single') {
+        state[q.id] = null;
+      } else {
+        state[q.id] = '';
+      }
+      if (q.otherOption) state[q.id + 'Other'] = '';
+    });
+    return state;
   }
 
   var state = blankState();
@@ -124,13 +133,15 @@
       if (!raw) return null;
       var saved = JSON.parse(raw);
       var fresh = blankState();
-      // Only copy keys we still recognise, so an old draft can never
+      // Copy only keys we still recognise, so an old draft can never
       // reintroduce a question that has since been removed.
       Object.keys(fresh).forEach(function (k) {
         if (saved[k] === undefined) return;
-        if (k === 'q3') {
-          Object.keys(fresh.q3).forEach(function (f) {
-            if (typeof saved.q3[f] === 'string' || saved.q3[f] === null) fresh.q3[f] = saved.q3[f];
+        if (fresh[k] && typeof fresh[k] === 'object' && !Array.isArray(fresh[k])) {
+          if (!saved[k] || typeof saved[k] !== 'object') return;
+          Object.keys(fresh[k]).forEach(function (sub) {
+            var v = saved[k][sub];
+            if (typeof v === 'string' || v === null) fresh[k][sub] = v;
           });
         } else if (Array.isArray(fresh[k])) {
           if (Array.isArray(saved[k])) fresh[k] = saved[k].filter(function (v) { return typeof v === 'string'; });
@@ -171,20 +182,22 @@
     head.appendChild(title);
     card.appendChild(head);
 
-    if (q.type === 'text') {
+    if (q.type === 'email' || q.type === 'text') {
       card.appendChild(textField(q));
+    } else if (q.type === 'textarea') {
+      card.appendChild(textArea(q));
     } else if (q.type === 'flavors') {
-      card.appendChild(flavorGrid());
+      card.appendChild(flavorGrid(q));
     } else {
       card.appendChild(chipGroup(q));
       if (q.otherOption) card.appendChild(otherField(q));
     }
 
+    if (q.note) card.appendChild(el('p', 'qnote', q.note));
+
     var error = el('p', 'field-error');
     error.id = 'error-' + q.id;
-    error.textContent = q.type === 'text'
-      ? 'Please add your name so we know whose box this was.'
-      : 'Please pick an answer to carry on.';
+    error.textContent = q.error || 'Please pick an answer to carry on.';
     card.appendChild(error);
 
     return card;
@@ -192,11 +205,16 @@
 
   function textField(q) {
     var input = el('input', 'input');
-    input.type = 'text';
+    input.type = q.type === 'email' ? 'email' : 'text';
     input.id = 'field-' + q.id;
     input.name = q.id;
     input.placeholder = q.placeholder || '';
-    input.autocomplete = 'name';
+    input.autocomplete = q.type === 'email' ? 'email' : 'off';
+    if (q.type === 'email') {
+      input.inputMode = 'email';
+      input.spellcheck = false;
+      input.autocapitalize = 'off';
+    }
     input.value = state[q.id] || '';
     input.setAttribute('aria-labelledby', 'label-' + q.id);
     input.setAttribute('aria-describedby', 'error-' + q.id);
@@ -206,6 +224,32 @@
       saveDraft();
     });
     return input;
+  }
+
+  function textArea(q) {
+    // The wrapper mirrors the value in a ::after so the box grows with
+    // the text via CSS grid — see .grow-wrap in survey.css.
+    var wrap = el('div', 'grow-wrap');
+
+    var area = el('textarea', 'input textarea');
+    area.id = 'field-' + q.id;
+    area.name = q.id;
+    area.rows = 3;
+    area.maxLength = 2000;
+    area.placeholder = q.placeholder || '';
+    area.value = state[q.id] || '';
+    area.setAttribute('aria-labelledby', 'label-' + q.id);
+    area.setAttribute('aria-describedby', 'error-' + q.id);
+    area.addEventListener('input', function () {
+      state[q.id] = area.value;
+      wrap.dataset.replicatedValue = area.value;
+      clearError(q.id);
+      saveDraft();
+    });
+
+    wrap.dataset.replicatedValue = area.value;
+    wrap.appendChild(area);
+    return wrap;
   }
 
   /* Single-select renders as a real radiogroup; multi-select as a
@@ -254,9 +298,6 @@
       saveDraft();
     });
 
-    // In the design this note sits with the free-text box, so it
-    // appears only when that box does — otherwise "optional" reads
-    // as if the question itself were optional.
     var note = el('p', 'qnote', 'Optional, only if you want to');
 
     wrap.appendChild(input);
@@ -264,7 +305,7 @@
     return wrap;
   }
 
-  function flavorGrid() {
+  function flavorGrid(q) {
     var wrap = el('div', 'flavors');
 
     FLAVORS.forEach(function (f) {
@@ -291,13 +332,14 @@
       group.setAttribute('role', 'radiogroup');
       group.setAttribute('aria-labelledby', nameId);
       group.dataset.flavor = f.key;
+      group.dataset.question = q.id;
 
       FLAVOR_OPTIONS.forEach(function (label) {
         var chip = el('button', 'chip chip--flavor', label);
         chip.type = 'button';
         chip.setAttribute('role', 'radio');
         chip.dataset.value = label;
-        chip.addEventListener('click', function () { setFlavor(f.key, label); });
+        chip.addEventListener('click', function () { setFlavor(q, f.key, label); });
         group.appendChild(chip);
       });
       group.addEventListener('keydown', radioKeydown);
@@ -350,26 +392,56 @@
     saveDraft();
   }
 
-  function setFlavor(key, value) {
-    state.q3[key] = state.q3[key] === value ? null : value;
-    syncFlavors();
+  function setFlavor(q, key, value) {
+    state[q.id][key] = state[q.id][key] === value ? null : value;
+    clearError(q.id);
+    syncQuestion(q);
     saveDraft();
   }
 
   /* ---------------------------------------------------------------
-     View sync — one function per question type, called after any
-     change and once on load so a restored draft shows correctly.
+     View sync — called after any change, and once on load so a
+     restored draft shows correctly.
      --------------------------------------------------------------- */
   function syncQuestion(q) {
-    if (q.type === 'text') {
-      var field = $('field-' + q.id);
+    var field;
+
+    if (q.type === 'email' || q.type === 'text') {
+      field = $('field-' + q.id);
       if (field && field.value !== state[q.id]) field.value = state[q.id] || '';
       return;
     }
-    if (q.type === 'flavors') { syncFlavors(); return; }
+
+    if (q.type === 'textarea') {
+      field = $('field-' + q.id);
+      if (field) {
+        if (field.value !== state[q.id]) field.value = state[q.id] || '';
+        if (field.parentElement) field.parentElement.dataset.replicatedValue = field.value;
+      }
+      return;
+    }
+
+    if (q.type === 'flavors') {
+      FLAVORS.forEach(function (f) {
+        var group = container.querySelector('[data-flavor="' + f.key + '"]');
+        if (!group) return;
+        var chips = group.querySelectorAll('.chip--flavor');
+        var checkedIndex = -1;
+        Array.prototype.forEach.call(chips, function (chip, i) {
+          var on = state[q.id][f.key] === chip.dataset.value;
+          chip.setAttribute('aria-checked', on ? 'true' : 'false');
+          if (on) checkedIndex = i;
+        });
+        var focusIndex = checkedIndex === -1 ? 0 : checkedIndex;
+        Array.prototype.forEach.call(chips, function (chip, i) {
+          chip.tabIndex = i === focusIndex ? 0 : -1;
+        });
+      });
+      return;
+    }
 
     var multi = q.type === 'multi';
-    var group = container.querySelector('[data-question="' + q.id + '"]');
+    var group = container.querySelector('.chips[data-question="' + q.id + '"]');
     if (!group) return;
 
     var chips = group.querySelectorAll('.chip');
@@ -405,38 +477,20 @@
     }
   }
 
-  function syncFlavors() {
-    FLAVORS.forEach(function (f) {
-      var group = container.querySelector('[data-flavor="' + f.key + '"]');
-      if (!group) return;
-      var chips = group.querySelectorAll('.chip--flavor');
-      var checkedIndex = -1;
-      Array.prototype.forEach.call(chips, function (chip, i) {
-        var on = state.q3[f.key] === chip.dataset.value;
-        chip.setAttribute('aria-checked', on ? 'true' : 'false');
-        if (on) checkedIndex = i;
-      });
-      var focusIndex = checkedIndex === -1 ? 0 : checkedIndex;
-      Array.prototype.forEach.call(chips, function (chip, i) {
-        chip.tabIndex = i === focusIndex ? 0 : -1;
-      });
-    });
-  }
-
-  function syncAll() {
-    QUESTIONS.forEach(syncQuestion);
-  }
+  function syncAll() { QUESTIONS.forEach(syncQuestion); }
 
   /* ---------------------------------------------------------------
      Validation
      --------------------------------------------------------------- */
   function isAnswered(q) {
-    if (q.type === 'text') return String(state[q.id] || '').trim().length > 0;
-    if (q.type === 'multi') return state[q.id].length > 0;
+    var value = state[q.id];
+    if (q.type === 'email') return EMAIL_RE.test(String(value || '').trim());
+    if (q.type === 'text' || q.type === 'textarea') return String(value || '').trim().length > 0;
+    if (q.type === 'multi') return value.length > 0;
     if (q.type === 'flavors') {
-      return Object.keys(state.q3).some(function (k) { return state.q3[k]; });
+      return Object.keys(value).some(function (k) { return value[k]; });
     }
-    return !!state[q.id];
+    return !!value;
   }
 
   function clearError(id) {
@@ -494,18 +548,15 @@
   function buildPayload() {
     // No shared secret here on purpose — api/submit.js attaches it
     // server-side so it never reaches the browser.
-    return {
-      submissionId: uuid(),
-      submittedAt: new Date().toISOString(),
-      name: String(state.name || '').trim(),
-      q2: state.q2, q2Other: state.q2Other,
-      q3: state.q3,
-      q4: state.q4,
-      q5: state.q5, q5Other: state.q5Other,
-      q6: state.q6, q6Other: state.q6Other,
-      q7: state.q7,
-      meta: collectMeta()
-    };
+    var answers = {};
+    Object.keys(state).forEach(function (k) {
+      var v = state[k];
+      answers[k] = typeof v === 'string' ? v.trim() : v;
+    });
+    answers.submissionId = uuid();
+    answers.submittedAt = new Date().toISOString();
+    answers.meta = collectMeta();
+    return answers;
   }
 
   /* Posts to our own origin (api/submit.js), so plain JSON is fine and
@@ -611,21 +662,23 @@
     mastheadCopy.hidden = true;
     thanks.hidden = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    thanks.querySelector('.thanks__title').setAttribute('tabindex', '-1');
-    thanks.querySelector('.thanks__title').focus({ preventScroll: true });
+    var heading = thanks.querySelector('.thanks__title');
+    heading.setAttribute('tabindex', '-1');
+    heading.focus({ preventScroll: true });
   }
 
   function reset(showForm) {
     state = blankState();
     clearDraft();
     hideNotice();
-    QUESTIONS.forEach(function (q) { clearError(q.id); });
-    var nameField = $('field-name');
-    if (nameField) nameField.value = '';
     QUESTIONS.forEach(function (q) {
-      if (!q.otherOption) return;
-      var otherInput = $('field-' + q.id + '-other');
-      if (otherInput) otherInput.value = '';
+      clearError(q.id);
+      var field = $('field-' + q.id);
+      if (field) field.value = '';
+      if (q.otherOption) {
+        var otherInput = $('field-' + q.id + '-other');
+        if (otherInput) otherInput.value = '';
+      }
     });
     syncAll();
     if (showForm) {
@@ -649,13 +702,14 @@
   $('clear-btn').addEventListener('click', function () { reset(false); });
   $('again-btn').addEventListener('click', function () { reset(true); });
 
-  // Enter in the name field should not submit a half-filled survey.
+  // Enter in a single-line field should not submit a half-filled survey.
+  // Textareas keep Enter for new lines.
   form.addEventListener('keydown', function (event) {
     if (event.key === 'Enter' && event.target.tagName === 'INPUT') event.preventDefault();
   });
 
-  // Expose the question map so the Apps Script column order and the
-  // page can be checked against each other from the console.
+  // Exposed so the Apps Script column order and the page can be checked
+  // against each other from the console.
   window.SNEAKIES_SURVEY = {
     questions: QUESTIONS,
     flavors: FLAVORS,
