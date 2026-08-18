@@ -14,9 +14,14 @@
  */
 
 /* Overridable from Vercel ▸ Settings ▸ Environment Variables, so the
-   URL can be rotated (or pointed at a staging sheet) without a commit. */
+   URL can be rotated (or pointed at a staging sheet) without a commit.
+
+   NOTE: in Apps Script, "Deploy ▸ New deployment" mints a NEW /exec URL
+   and leaves the old one frozen on old code. If the collector starts
+   rejecting a payload shape it should accept, check this URL still
+   matches the active deployment before debugging anything else. */
 const ENDPOINT = process.env.SURVEY_ENDPOINT
-  || 'https://script.google.com/macros/s/AKfycbytuIIENNa6AtZL7yr9Pc_h8gXqvM-Hz2M-q73oDAyL_x-a-_ZIV513DR2SD-kZBvAudw/exec';
+  || 'https://script.google.com/macros/s/AKfycbySXZB_MxMeuc99gmPLCH8SthvfNbBD8sF42fhfUD9gA1GLB6d_2XvCeXLOlrnaxGgdtg/exec';
 
 /* Must match SHARED_SECRET in apps-script/Code.gs. */
 const SECRET = process.env.SURVEY_SECRET || 'sneakies-sample-box-2026';
